@@ -1,15 +1,5 @@
 [
     {
-        "team": "Chennai Super Kings",
-        "matches": 7,
-        "won": 5,
-        "lost": 2,
-        "nrr": 0.771,
-        "for": "1130/133.1",
-        "against": "1071/138.5",
-        "pts": 10
-    },
-    {
         "team": "Royal Challengers Bangalore",
         "matches": 7,
         "won": 4,
@@ -39,6 +29,16 @@
         "against": "1094/137.1",
         "pts": 6
     },
+    {
+        "team": "Chennai Super Kings",
+        "matches": 7,
+        "won": 5,
+        "lost": 2,
+        "nrr": 0.771,
+        "for": "1130/133.1",
+        "against": "1071/138.5",
+        "pts": 10
+    },  
     {
         "team": "Mumbai Indians",
         "matches": 8,

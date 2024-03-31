@@ -1,8 +1,9 @@
 const express=require('express')
 const app=express()
+const cors=require('cors')
 const resultRoutes=require('./routes/resultRoutes')
 
-
+app.use(cors())
 app.use(express.json())
 app.use('/result',resultRoutes)
 
