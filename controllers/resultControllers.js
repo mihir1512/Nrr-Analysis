@@ -1,3 +1,4 @@
+const { param } = require('../routes/resultRoutes');
 const pointTable=require('../src/pointTable.json')
 
 
@@ -21,14 +22,14 @@ const compareFn=(item1,item2)=>{
 }
 
 const convertToDecimal=(over)=>{
-    const balls=(over-Math.floor(over)).toFixed(1)*10
-    const decimalOvers=Math.floor(over)+(balls/6)
-    // console.log(decimalOvers);
+    const decimalOvers=(((over-Math.floor(over)).toFixed(1)*10)+(parseInt(over)*6))/6
+    // console.log(/decimal/,decimalOvers);
     return decimalOvers
 }
 
 const convertToExactOver=(over)=>{
     const exactOver=parseFloat(`${Math.floor(over)}.${Math.ceil(((over-Math.floor(over)).toFixed(3))*6)}`)
+    // console.log(/exactOver/,exactOver);
     return exactOver
 }
 
@@ -55,59 +56,103 @@ function solveQuadratic(a, b, c) {
     }
 }
 
-// // Example usage:
-// const a = 15.981;
-// const b = 1946.98;
-// const c = -39084.62;
-// const roots = solveQuadratic(a, b, c);
-// console.log("Roots:", roots);
+const calculateNrr=(forRuns,forOvers,againstRuns,againstOvers)=>{
+    return((forRuns/forOvers)-(againstRuns/againstOvers))
+}
 
-const calculateNrr=(param)=>{
-    const {favouriteTeam,oppositionTeam,targetPositionTeam,runs:b,tossResult,decimalOvers}=param
+const solveInequality=(param)=>{
+    const {a,b,c,d,e,f,g,h,i,j,k,tossResult,oppositionTeam,targetPositionTeam,check}=param
+    // console.log(/f/,f);
 
-    const desiredTeamNrr=f=targetPositionTeam.nrr
-
-    const targetPositionTeamRuns=g=parseInt(targetPositionTeam.for.split('/')[0])
-    const tagetPositionTeamOvers=h=convertToDecimal(parseFloat(targetPositionTeam.for.split('/')[1]))
-    const targetPositionAgainstRuns=i=parseInt(targetPositionTeam.against.split('/')[0])
-    const targetPositionAgainstOvers=j=convertToDecimal(parseFloat(targetPositionTeam.against.split('/')[1]))
-    
-
-    const favouriteTeamRuns=a=parseInt(favouriteTeam.for.split('/')[0])
-    const favouriteTeamOvers=c=convertToDecimal(parseFloat(favouriteTeam.for.split('/')[1]))
-    const favouriteTeamAgainstRuns=d=parseInt(favouriteTeam.against.split('/')[0])
-    const favouriteTeamAgainstOvers=e=convertToDecimal(parseFloat(favouriteTeam.against.split('/')[1]))
-
-    // console.log(/adf/,desiredPositionTeamRuns,desiredPositionTeamOvers,desiredPositionAgainstRuns,desiredPositionAgainstOvers);
-    // console.log(/lkj/,favouriteTeamRuns,favouriteTeamOvers,favouriteTeamAgainstRuns,favouriteTeamAgainstOvers);
     if(tossResult==='bowling')
     {
-        if(oppositionTeam===targetPositionTeam.team)  
+        if(oppositionTeam===targetPositionTeam.team && check)  
         {
-            const A=(((e+20)*(g+b))+((h+20)*(d+b)))
-            const B=((c*(e+20)*(g+b))+(j*(e+20)*(g+b))-((e+20)*(i+b+1)*(h+20))+(j*(h+20)*(d+b))-((h+20)*(a+b+1)*(e+20))+(c*(h+20)*(d+b)))
-            const C=((j*c*(e+20)*(g+b))-(c*(e+20)*(i+b+1)*(h+20))-(j*(h+20)*(a+b+1)*(e+20))+(j*c*(h+20)*(d+b)))
+            const A=(((e+k)*(g+b))+((h+k)*(d+b)))
+            const B=((c*(e+k)*(g+b))+(j*(e+k)*(g+b))-((e+k)*(i+b+1)*(h+k))+(j*(h+k)*(d+b))-((h+k)*(a+b+1)*(e+k))+(c*(h+k)*(d+b)))
+            const C=((j*c*(e+k)*(g+b))-(c*(e+k)*(i+b+1)*(h+k))-(j*(h+k)*(a+b+1)*(e+k))+(j*c*(h+k)*(d+b)))
 
             const x=solveQuadratic(A,B,C);
-            console.log(/x/,x);
+            return convertToExactOver(x[0])
         } 
         else
         {
-            const x=(((a+b+1)*(e+20))-(d*c)-(b*c)-(20*f*c)-(f*c*e))/((20*f)+(f*e)+d+b)
-            console.log(/x/,x,y,convertToExactOver(y));
+            const x=(((a+b+1)*(e+k))-(d*c)-(b*c)-(k*f*c)-(f*c*e))/((k*f)+(f*e)+d+b)
+            // console.log(/lkj/,x);
+            return convertToExactOver(x)
         }
         
     }
     if(tossResult==="batting")
     {
-        const x=((((a+b)*(e+20)-(f*(c+20)*(e+20)))/(c+20))-d)
-
-        console.log(/x/,x);
+        if(oppositionTeam===targetPositionTeam.team && check)  
+        {
+            const x=(((h+k)*(j+k)*(a+b)*(e+k))+((c+k)*(e+k)*(i+b)*(h+k))-(d*(h+k)*(j+k)*(c+k))-(g*(c+k)*(e+k)*(j+k)))/(((c+k)*(e+k)*(j+k))+((h+k)*(j+k)*(c+k)))
+            return x
+            
+        } else{
+            const x=((((a+b)*(e+k)-(f*(c+k)*(e+k)))/(c+k))-d)
+            return x
+        }
     }
 }
 
-const calculateResult=(param)=>{
-        const {favouriteTeam,oppositionTeam,targetPositionTeam,runs,tossResult,decimalOvers,position}=param
+const calculateRespForAboveposition=(param)=>{
+    let {favouriteTeam,oppositionTeam,targetPositionTeam,runs:b,tossResult,exactOver,decimalOvers:k,position,sortedData}=param
+
+    let desiredTeamNrr=f=targetPositionTeam.nrr
+
+    let targetPositionTeamRuns=g=parseInt(targetPositionTeam.for.split('/')[0])
+    let tagetPositionTeamOvers=h=convertToDecimal(parseFloat(targetPositionTeam.for.split('/')[1]))
+    let targetPositionAgainstRuns=i=parseInt(targetPositionTeam.against.split('/')[0])
+    let targetPositionAgainstOvers=j=convertToDecimal(parseFloat(targetPositionTeam.against.split('/')[1]))
+    
+    let favouriteTeamRuns=a=parseInt(favouriteTeam.for.split('/')[0])
+    let favouriteTeamOvers=c=convertToDecimal(parseFloat(favouriteTeam.for.split('/')[1]))
+    let favouriteTeamAgainstRuns=d=parseInt(favouriteTeam.against.split('/')[0])
+    let favouriteTeamAgainstOvers=e=convertToDecimal(parseFloat(favouriteTeam.against.split('/')[1]))
+
+    if(favouriteTeam.pts===targetPositionTeam.pts )
+    {
+        if(position-2>=0 && sortedData[position-2].pts==favouriteTeam.pts+2)
+        {           
+            const obj={a,b,c,d,e,f:sortedData[position-2].nrr,g,h,i,j,k,tossResult,oppositionTeam,targetPositionTeam,check:false}
+            const x=solveInequality(obj)
+            if(tossResult==='bowling')
+            {
+                const dbOver=convertToDecimal(x)
+                const higherNrr=calculateNrr(favouriteTeamRuns+b+1,favouriteTeamOvers+dbOver,favouriteTeamAgainstRuns+b,favouriteTeamAgainstOvers+k)
+                const lowerNrr=calculateNrr(favouriteTeamRuns+b+1,favouriteTeamOvers+20,favouriteTeamAgainstRuns+b,favouriteTeamAgainstOvers+k)
+
+                console.log(/lowerNrr/,lowerNrr,/higherNrr/,higherNrr);
+                const lowerOver=x
+                const higherOver=convertToExactOver(k)
+                const resp=`->If ${favouriteTeam.team} need to chase ${b+1} runs between ${lowerOver} and ${higherOver} overs.
+                -> Revised NRR for ${favouriteTeam.team} will be between ${lowerNrr} to ${higherNrr}`
+                return resp
+            }
+            else{
+                const runs=x
+                const higherNrr=calculateNrr(favouriteTeamRuns+b,favouriteTeamOvers+k,favouriteTeamAgainstRuns+x,favouriteTeamAgainstOvers+k)
+                const lowerNrr=calculateNrr(favouriteTeamRuns+b,favouriteTeamOvers+k,favouriteTeamAgainstRuns+b-1,favouriteTeamAgainstOvers+k)
+
+                console.log(/lowerNrr/,lowerNrr,/higherNrr/,higherNrr);
+                const lowerRun=Math.ceil(x)
+                const higherRuns=b-1
+                const resp=`o If ${favouriteTeam.team} score ${b} runs in ${exactOver},${favouriteTeam.team} need to
+                restrict ${oppositionTeam} between ${lowerRun} to ${higherRuns} runs in ${exactOver}.
+                o Revised NRR for ${favouriteTeam.team} will be between ${lowerNrr} to ${higherNrr}.`
+                return resp
+            }
+            
+           
+        }
+    }
+   
+}
+
+const resultForAbovePosition=(param,req,res)=>{
+        const {favouriteTeam,oppositionTeam,targetPositionTeam,runs,tossResult,decimalOvers,position,sortedData,exactOver}=param
         if(favouriteTeam.pts+2<targetPositionTeam.pts)
         {           
             return res.status(200).json({msg:`Your team can't reach at position ${position}`})
@@ -118,8 +163,27 @@ const calculateResult=(param)=>{
             {
                 return res.status(200).json({msg:`Your team can't reach at position ${position}`})
             }
+            else if(position-2>=0 && sortedData[position-2].pts==favouriteTeam.pts+2)
+            {
+                if(sortedData[position-2].nrr<=favouriteTeam.nrr)
+                {
+                    return res.status(200).json({msg:`Your team can't reach at position ${position}`})
+                }
+                else
+                {
+                    // resultnrr<targetposition-2teamnrr
+                    // range=(resultnrr<tagetposition-2teamnrr)
+                    const result=calculateRespForAboveposition(param)
+                    return res.status(200).json({result})
+                }
+            }
+            else{
+                //just need to win
+                // range
+            }
+            
             // const nrr=calculateNrr(param)
-            //just need to win
+            
         }
         else if(position-2>=0 && sortedData[position-2].pts===targetPositionTeam.pts)
         {
@@ -144,24 +208,37 @@ const calculateResult=(param)=>{
                 //linear
             }
         }
-        const nrr=calculateNrr(param)
+        // const nrr=calculateNrr(param)
 }
 
 exports.getResult=(req,res)=>{
     try {
         
         const sortedData=pointTable.sort(compareFn)
-        const {yourTeam,oppositionTeam,over,position,runs,tossResult}=req.body
-
+        let {yourTeam,oppositionTeam,over,position,runs,tossResult}=req.body
+        runs=parseInt(runs)
+        over=parseFloat(over)
         const targetPositionTeam=sortedData[position-1]
         const favouriteTeam=sortedData.find(item=>item.team===yourTeam)
 
        
         const decimalOvers=convertToDecimal(over)
-        const bodyObj={favouriteTeam,oppositionTeam,targetPositionTeam,runs,tossResult,decimalOvers,position}
-        const result=calculateResult(bodyObj)
+        const bodyObj={favouriteTeam,oppositionTeam,targetPositionTeam,runs,tossResult,decimalOvers,position,sortedData,exactOver:over}
+        const currentPosition= sortedData.findIndex(item => item.team=== favouriteTeam.team)+1;
+        // console.log(currentPosition);
+        if(position<currentPosition)
+        {
+        const result=resultForAbovePosition(bodyObj,req,res)
+        }
+        else if(position===currentPosition)
+        {
 
-        return res.status(200).json(targetPositionTeam)
+        }
+        else{
+
+        }
+
+        // return res.status(200).json(targetPositionTeam)
     } catch (error) {
         console.log(error);
         console.log(`[Error]-[${error.message}]`);
