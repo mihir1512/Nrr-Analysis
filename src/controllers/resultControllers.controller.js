@@ -29,21 +29,30 @@ const compareFn = (item1, item2) => {
 exports.getResult = (req, res) => {
     try {
         //sort teams according to point and NRR
-        const sortedData = pointTable.sort(compareFn)
-        let { yourTeam, oppositionTeam, over, position, runs, tossResult } = req.body
-        runs = parseInt(runs)
-        over = parseFloat(over)
-        position = parseInt(position)
-        const targetPositionTeam = sortedData[position - 1]
-        const favouriteTeam = sortedData.find(item => item.team === yourTeam)
-
+        const sortedPointTable = pointTable.sort(compareFn)
+        const { yourTeam, oppositionTeam, over, position, runs, tossResult } = req.body
+        const firstInningRuns = parseInt(runs)
+        const exactOvers = parseFloat(over)
+        const targetPosition = parseInt(position)
+        const selectedTeamCurrentPosition=sortedPointTable.findIndex(item=>item.team===yourTeam)
+        if(targetPosition>=selectedTeamCurrentPosition)
+        {
+            return res.status(400).json({msg:"Ypu Can Only Select Position Above You."})
+        }
+        const targetPositionTeam = sortedPointTable[targetPosition - 1]
+        const selectedTeam = sortedPointTable.find(item => item.team === yourTeam)
+        selectedTeamPointsAfterWinning=selectedTeam.pts+2
+        if(selectedTeamPointsAfterWinning<targetPositionTeam.pts)
+        {
+            return res.status(200).json({msg:`You Can't Reach At Position ${targetPosition}`})
+        }
         //conversion of balls to decimal number
         const decimalOvers = convertToDecimal(over)
 
-        const bodyObj = { favouriteTeam, oppositionTeam, targetPositionTeam, runs, tossResult, decimalOvers, position, sortedData, exactOver: over }
+        const generateAnalysisArgs = { sortedPointTable,selectedTeam, oppositionTeam, targetPositionTeam, firstInningRuns,exactOvers,decimalOvers, targetPosition,tossResult }
 
         //Generate ressult 
-        const response = generateAnalysis(bodyObj)
+        const response = generateAnalysis(generateAnalysisArgs)
         return res.status(200).json({ msg: response })
     } catch (error) {
         console.log(error);

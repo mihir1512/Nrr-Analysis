@@ -2,37 +2,184 @@ const { solveQuadratic } = require('./solveQuadratic.helper')
 
 
 exports.solveInequality = (param) => {
-    const { a, b, c, d, e, f, g, h, i, j, k, tossResult, check } = param
-   
+    const {
+        isLimitNrrKnown,
+        decimalOvers,
+        limitNrr,
+        firstInningRuns,
+        selectedTeamForRuns,
+        selectedTeamForOvers,
+        selectedTeamAgainstRuns,
+        selectedTeamAgainstOvers,
+        comparedTeamForRuns,
+        comparedTeamForOvers,
+        comparedTeamAgainstRuns,
+        comparedTeamAgainstOvers
+    } = param
+
     if (tossResult === 'bowling') {
         //if target postion team and opposition team are same
-        if (check) {
-            // console.log(/g/,g);
-            const A = (((e + k) * (g + b)) + ((h + k) * (d + b)))
-            const B = ((c * (e + k) * (g + b)) + (j * (e + k) * (g + b)) - ((e + k) * (i + b + 1) * (h + k)) + (j * (h + k) * (d + b)) - ((h + k) * (a + b + 1) * (e + k)) + (c * (h + k) * (d + b)))
-            const C = ((j * c * (e + k) * (g + b)) - (c * (e + k) * (i + b + 1) * (h + k)) - (j * (h + k) * (a + b + 1) * (e + k)) + (j * c * (h + k) * (d + b)))
+        if (isLimitNrrKnown === false) {
+            const A = (
+                (
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamForRuns + firstInningRuns)
+                ) +
+                (
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamAgainstRuns + firstInningRuns)
+                )
+            )
 
-            const x = solveQuadratic(A, B, C);
-            console.log(x);
-            return x[0]
+            const B = (
+                (
+                    selectedTeamForOvers *
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamForRuns + firstInningRuns)
+                ) +
+                (
+                    comparedTeamAgainstOvers *
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamForRuns + firstInningRuns)
+                ) -
+                (
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamAgainstRuns + firstInningRuns + 1) *
+                    (comparedTeamForOvers + decimalOvers)
+                ) +
+                (
+                    comparedTeamAgainstOvers *
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamAgainstRuns + firstInningRuns)
+                ) -
+                (
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamForRuns + firstInningRuns + 1) *
+                    (selectedTeamAgainstOvers + decimalOvers)
+                ) +
+                (
+                    selectedTeamForOvers *
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamAgainstRuns + firstInningRuns)
+                )
+            )
+
+            const C = (
+                (
+                    comparedTeamAgainstOvers * selectedTeamForOvers *
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamForRuns + firstInningRuns)
+                ) -
+                (
+                    selectedTeamForOvers *
+                    (selectedTeamAgainstOvers + decimalOvers) *
+                    (comparedTeamAgainstRuns + firstInningRuns + 1) *
+                    (comparedTeamForOvers + decimalOvers)
+                ) -
+                (
+                    comparedTeamAgainstOvers *
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamForRuns + firstInningRuns + 1) *
+                    (selectedTeamAgainstOvers + decimalOvers)
+                ) +
+                (
+                    comparedTeamAgainstOvers * selectedTeamForOvers *
+                    (comparedTeamForOvers + decimalOvers) *
+                    (selectedTeamAgainstRuns + firstInningRuns)
+                )
+            )
+
+            const roots = solveQuadratic(A, B, C);
+            const lowerOrHigherOvers = roots[0]
+            return lowerOrHigherOvers
         }
         else {
-            const x = (((a + b + 1) * (e + k)) - (d * c) - (b * c) - (k * f * c) - (f * c * e)) / ((k * f) + (f * e) + d + b)
 
-            return x
+            const lowerOrHigherOvers = (
+                (
+                    (
+                        (selectedTeamForRuns + firstInningRuns + 1) *
+                        (selectedTeamAgainstOvers + decimalOvers)
+                    ) -
+                    (selectedTeamAgainstRuns * selectedTeamForOvers) -
+                    (firstInningRuns * selectedTeamForOvers) -
+                    (decimalOvers * limitNrr * selectedTeamForOvers) -
+                    (limitNrr * selectedTeamForOvers * selectedTeamAgainstOvers)
+                ) /
+                (
+                    (decimalOvers * limitNrr) +
+                    (limitNrr * selectedTeamAgainstOvers) +
+                    selectedTeamAgainstRuns + firstInningRuns
+                )
+            )
+
+            return lowerOrHigherOvers
 
         }
-
     }
     if (tossResult === "batting") {
         //if target position team and opposition team are same
-        if (check) {
-            // console.log(/g/,g);
-            const x = (((h + k) * (j + k) * (a + b) * (e + k)) + ((c + k) * (e + k) * (i + b) * (h + k)) - (d * (h + k) * (j + k) * (c + k)) - (g * (c + k) * (e + k) * (j + k))) / (((c + k) * (e + k) * (j + k)) + ((h + k) * (j + k) * (c + k)))
-            return x
+        if (isLimitNrrKnown === false) {
+            const lowerOrHigherRuns = (
+                (
+                    (
+                        (comparedTeamForOvers + decimalOvers) *
+                        (comparedTeamAgainstOvers + decimalOvers) *
+                        (selectedTeamForRuns + firstInningRuns) *
+                        (selectedTeamAgainstOvers + decimalOvers)
+                    ) +
+                    (
+                        (selectedTeamForOvers + decimalOvers) *
+                        (selectedTeamAgainstOvers + decimalOvers) *
+                        (comparedTeamAgainstRuns + firstInningRuns) *
+                        (comparedTeamForOvers + decimalOvers)
+                    ) -
+                    (
+                        selectedTeamAgainstRuns *
+                        (comparedTeamForOvers + decimalOvers) *
+                        (comparedTeamAgainstOvers + decimalOvers) *
+                        (selectedTeamForOvers + decimalOvers)
+                    ) -
+                    (
+                        comparedTeamForRuns *
+                        (selectedTeamForOvers + decimalOvers) *
+                        (selectedTeamAgainstOvers + decimalOvers) *
+                        (comparedTeamAgainstOvers + decimalOvers)
+                    )
+                ) /
+                (
+                    (
+                        (selectedTeamForOvers + decimalOvers) *
+                        (selectedTeamAgainstOvers + decimalOvers) *
+                        (comparedTeamAgainstOvers + decimalOvers)
+                    ) +
+                    (
+                        (comparedTeamForOvers + decimalOvers) *
+                        (comparedTeamAgainstOvers + decimalOvers) *
+                        (selectedTeamForOvers + decimalOvers)
+                    )
+                )
+            )
+            return lowerOrHigherRuns
         } else {
-            const x = ((((a + b) * (e + k) - (f * (c + k) * (e + k))) / (c + k)) - d)
-            return x
+            const lowerOrHigherRuns = (
+                (
+                    (
+                        (selectedTeamForRuns + firstInningRuns) *
+                        (selectedTeamAgainstOvers + decimalOvers) -
+                        (
+                            limitNrr *
+                            (selectedTeamForOvers + decimalOvers) *
+                            (selectedTeamAgainstOvers + decimalOvers)
+                        )
+                    ) /
+                    (selectedTeamForOvers + decimalOvers)
+                ) -
+                (
+                    selectedTeamAgainstRuns
+                )
+            )
+            return lowerOrHigherRuns
         }
     }
 }
