@@ -1,8 +1,7 @@
 
 const pointTable = require('../data/pointTable.json')
-const { convertToDecimal } = require('../helpers/decimalConversion.helper')
-const { generateResult } = require('../services/generateResult.service')
-const {generateAnalysis}=require('../services/generateAnalysis.service')
+const { convertToDecimal } = require('../utils/result.utils')
+const {generateResult}=require('../services/generateResult.service')
 
 
 
@@ -30,32 +29,57 @@ exports.getResult = (req, res) => {
     try {
         //sort teams according to point and NRR
         const sortedPointTable = pointTable.sort(compareFn)
+        
+        //Extract request body parameter
         const { yourTeam, oppositionTeam, over, position, runs, tossResult } = req.body
+
+        //Parse request parameter to appropriate types
         const firstInningRuns = parseInt(runs)
         const exactOvers = parseFloat(over)
         const targetPosition = parseInt(position)
-        const selectedTeamCurrentPosition=sortedPointTable.findIndex(item=>item.team===yourTeam)
+
+        //Find current position of selected team in the sorted point table
+        const selectedTeamCurrentPosition=sortedPointTable.findIndex(item=>item.team===yourTeam)+1
+
+        //Validate target position
         if(targetPosition>=selectedTeamCurrentPosition)
         {
-            return res.status(400).json({msg:"Ypu Can Only Select Position Above You."})
+            return res.status(200).json({msg:"You Can Only Select Position Above Selected Team Position."})
         }
+
+        // Extract target position team and selected team details
         const targetPositionTeam = sortedPointTable[targetPosition - 1]
         const selectedTeam = sortedPointTable.find(item => item.team === yourTeam)
         selectedTeamPointsAfterWinning=selectedTeam.pts+2
+
+        // Validate if selected team can reach the target position after winning
         if(selectedTeamPointsAfterWinning<targetPositionTeam.pts)
         {
             return res.status(200).json({msg:`You Can't Reach At Position ${targetPosition}`})
         }
-        //conversion of balls to decimal number
+
+        // Convert overs to decimal number
         const decimalOvers = convertToDecimal(over)
 
-        const generateAnalysisArgs = { sortedPointTable,selectedTeam, oppositionTeam, targetPositionTeam, firstInningRuns,exactOvers,decimalOvers, targetPosition,tossResult }
+        // Prepare arguments for result generation
+        const generateResultArgs = { 
+            sortedPointTable,
+            selectedTeam, 
+            oppositionTeam, 
+            targetPositionTeam, 
+            firstInningRuns,
+            exactOvers,
+            decimalOvers, 
+            targetPosition,
+            tossResult }
 
         //Generate ressult 
-        const response = generateAnalysis(generateAnalysisArgs)
+        const response = generateResult(generateResultArgs)
+
+        // Send result as JSON response
         return res.status(200).json({ msg: response })
     } catch (error) {
-        console.log(error);
+        // Handle errors and send appropriate response
         console.log(`[Error]-[${error.message}]`);
         return res.status(500).json({ error: error.message })
     }

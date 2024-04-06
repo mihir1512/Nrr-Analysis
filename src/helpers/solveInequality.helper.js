@@ -1,8 +1,9 @@
-const { solveQuadratic } = require('./solveQuadratic.helper')
+const { solveQuadratic } = require('../utils/result.utils')
 
 
 exports.solveInequality = (param) => {
     const {
+        tossResult,
         isLimitNrrKnown,
         decimalOvers,
         limitNrr,
@@ -20,7 +21,7 @@ exports.solveInequality = (param) => {
     if (tossResult === 'bowling') {
         //if target postion team and opposition team are same
         if (isLimitNrrKnown === false) {
-            const A = (
+            const xSquareCoefficient = (
                 (
                     (selectedTeamAgainstOvers + decimalOvers) *
                     (comparedTeamForRuns + firstInningRuns)
@@ -31,7 +32,7 @@ exports.solveInequality = (param) => {
                 )
             )
 
-            const B = (
+            const xCoefficient = (
                 (
                     selectedTeamForOvers *
                     (selectedTeamAgainstOvers + decimalOvers) *
@@ -64,7 +65,7 @@ exports.solveInequality = (param) => {
                 )
             )
 
-            const C = (
+            const constant = (
                 (
                     comparedTeamAgainstOvers * selectedTeamForOvers *
                     (selectedTeamAgainstOvers + decimalOvers) *
@@ -89,7 +90,7 @@ exports.solveInequality = (param) => {
                 )
             )
 
-            const roots = solveQuadratic(A, B, C);
+            const roots = solveQuadratic(xSquareCoefficient, xCoefficient, constant);
             const lowerOrHigherOvers = roots[0]
             return lowerOrHigherOvers
         }

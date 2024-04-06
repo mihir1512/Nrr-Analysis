@@ -1,161 +1,230 @@
-const { calculateNrr } = require('../helpers/calculateNrr.helper')
-const { convertToDecimal } = require('../helpers/decimalConversion.helper')
+const { convertToDecimal } = require('../utils/result.utils')
 const { solveInequality } = require('../helpers/solveInequality.helper')
-const { convertToExactOver } = require('../helpers/exactOverConversion.helper')
+const { generateResponse } = require("../helpers/generateResponse.helper")
 
 
 exports.generateResult = (param) => {
     let {
-        favouriteTeam,
+        sortedPointTable,
+        selectedTeam,
         oppositionTeam,
         targetPositionTeam,
-        runs: b,
-        tossResult,
-        exactOver,
-        decimalOvers: k,
-        position,
-        sortedData } = param
+        firstInningRuns,
+        exactOvers,
+        decimalOvers,
+        targetPosition,
+        tossResult
+    } = param
 
-    let desiredTeamNrr = f = targetPositionTeam.nrr
 
     //geeting target position team Data
     const targetPositionTeamRuns = parseInt(targetPositionTeam.for.split('/')[0])
-    const tagetPositionTeamOvers = convertToDecimal(parseFloat(targetPositionTeam.for.split('/')[1]))
+    const targetPositionTeamOvers = convertToDecimal(parseFloat(targetPositionTeam.for.split('/')[1]))
     const targetPositionAgainstRuns = parseInt(targetPositionTeam.against.split('/')[0])
     const targetPositionAgainstOvers = convertToDecimal(parseFloat(targetPositionTeam.against.split('/')[1]))
-    //getting slected team data
-    const favouriteTeamRuns = parseInt(favouriteTeam.for.split('/')[0])
-    const favouriteTeamOvers = convertToDecimal(parseFloat(favouriteTeam.for.split('/')[1]))
-    const favouriteTeamAgainstRuns = parseInt(favouriteTeam.against.split('/')[0])
-    const favouriteTeamAgainstOvers = convertToDecimal(parseFloat(favouriteTeam.against.split('/')[1]))
+    //getting selected team data
+    const selectedTeamForRuns = parseInt(selectedTeam.for.split('/')[0])
+    const selectedTeamForOvers = convertToDecimal(parseFloat(selectedTeam.for.split('/')[1]))
+    const selectedTeamAgainstRuns = parseInt(selectedTeam.against.split('/')[0])
+    const selectedTeamAgainstOvers = convertToDecimal(parseFloat(selectedTeam.against.split('/')[1]))
+    //geeting above target position team data
+    const isAboveTargetPositionTeamExist = (targetPosition - 2 >= 0) ? true : false
+    const aboveTargetPositionTeam = isAboveTargetPositionTeamExist ? sortedPointTable[targetPosition - 2] : null
+    const aboveTargetPositionTeamForRuns = isAboveTargetPositionTeamExist ? parseInt(aboveTargetPositionTeam.for.split('/')[0]) : null
+    const aboveTargetPositionTeamForOvers = isAboveTargetPositionTeamExist ? convertToDecimal(parseFloat(aboveTargetPositionTeam.for.split('/')[1])) : null
+    const aboveTargetPositionTeamAgainstRuns = isAboveTargetPositionTeamExist ? parseInt(aboveTargetPositionTeam.against.split('/')[0]) : null
+    const aboveTargetPositionTeamAgainstOvers = isAboveTargetPositionTeamExist ? convertToDecimal(parseFloat(aboveTargetPositionTeam.against.split('/')[1])) : null
 
-    let inequalityObj1, inequalityObj2
-    if (favouriteTeam.team === 'Rajasthan Royals' && oppositionTeam === "Delhi Capitals" && position === 3) {
-        //creating object to solve equation
-        inequalityObj2 = {
-            a: favouriteTeamRuns,
-            b,
-            c: favouriteTeamOvers,
-            d: favouriteTeamAgainstRuns,
-            e: favouriteTeamAgainstOvers,
-            f: sortedData[position - 2].nrr,
-            g: targetPositionTeamRuns,
-            h: tagetPositionTeamOvers,
-            i: targetPositionAgainstRuns,
-            j: targetPositionAgainstOvers,
-            k,
-            tossResult,
-            oppositionTeam,
-            targetPositionTeam,
-            check: false
+    const solveInequalityCommonArgs = {
+        selectedTeamForRuns,
+        selectedTeamForOvers,
+        selectedTeamAgainstRuns,
+        selectedTeamAgainstOvers,
+        firstInningRuns,
+        decimalOvers,
+        tossResult,
+        oppositionTeam,
+        targetPositionTeam,
+    }
+
+    const generateResponeCommonArgs = {
+        firstInningRuns,
+        decimalOvers,
+        tossResult,
+        exactOvers,
+        selectedTeam,
+        selectedTeamForRuns,
+        selectedTeamForOvers,
+        selectedTeamAgainstRuns,
+        selectedTeamAgainstOvers,
+        oppositionTeam,
+        targetPosition
+    }
+
+    if (targetPositionTeam.pts === selectedTeam.pts) {
+        if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts) {
+            console.log(/case1/);
+            const response = `You can't reach at position ${position}`
+            return response
         }
+        else if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts + 2) {
+            console.log(/case2/);
+            const higherRunsOrOvers = (tossResult === "bowling") ? decimalOvers : firstInningRuns - 1
+            const solveInequalityArgs = { ...solveInequalityCommonArgs }
+            solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
+            solveInequalityArgs.comparedTeamForRuns = aboveTargetPositionTeamForRuns
+            solveInequalityArgs.comparedTeamForOvers = aboveTargetPositionTeamForOvers
+            solveInequalityArgs.comparedTeamAgainstRuns = aboveTargetPositionTeamAgainstRuns
+            solveInequalityArgs.comparedTeamAgainstOvers = aboveTargetPositionTeamAgainstOvers
+            solveInequalityArgs.isLimitNrrKnown = (aboveTargetPositionTeam.team === oppositionTeam) ? false : true
 
-        inequalityObj1 = {
-            a: favouriteTeamRuns,
-            b,
-            c: favouriteTeamOvers,
-            d: favouriteTeamAgainstRuns,
-            e: favouriteTeamAgainstOvers,
-            f,
-            g: targetPositionTeamRuns,
-            h: tagetPositionTeamOvers,
-            i: targetPositionAgainstRuns,
-            j: targetPositionAgainstOvers,
-            k,
-            tossResult,
-            oppositionTeam,
-            targetPositionTeam,
-            check: true
+            const lowerRunsOrOvers = solveInequality(solveInequalityArgs)
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
+            return response.msg
+        }
+        else {
+            console.log(/case3/);
+            const higherRunsOrOvers = (tossResult === "bowling") ? decimalOvers : firstInningRuns - 1
+            const lowerRunsOrOvers = 0
+
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
+            return response.msg
         }
     }
-    else if (favouriteTeam.team === 'Rajasthan Royals' && oppositionTeam === "Royal Challengers Bangalore" && position === 3) {
-        inequalityObj1 = {
-            a: favouriteTeamRuns,
-            b,
-            c: favouriteTeamOvers,
-            d: favouriteTeamAgainstRuns,
-            e: favouriteTeamAgainstOvers,
-            f,
-            g: targetPositionTeamRuns,
-            h: tagetPositionTeamOvers,
-            i: targetPositionAgainstRuns,
-            j: targetPositionAgainstOvers,
-            k,
-            tossResult,
-            oppositionTeam,
-            targetPositionTeam,
-            check: false
+    else if (targetPositionTeam.team === oppositionTeam) {
+        if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === targetPositionTeam.pts) {
+            console.log(/case4/);
+            const solveInequalityArgs = { ...solveInequalityCommonArgs }
+            solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
+            solveInequalityArgs.isLimitNrrKnown = true
+            const lowerRunsOrOvers = solveInequality(solveInequalityArgs)
+
+            solveInequalityArgs.limitNrr = targetPositionTeam.nrr
+            solveInequalityArgs.comparedTeamForRuns = targetPositionTeamRuns
+            solveInequalityArgs.comparedTeamForOvers = targetPositionTeamOvers
+            solveInequalityArgs.comparedTeamAgainstRuns = targetPositionAgainstRuns
+            solveInequalityArgs.comparedTeamAgainstOvers = targetPositionAgainstOvers
+            solveInequalityArgs.isLimitNrrKnown = false
+            const higherRunsOrOvers = solveInequality(solveInequalityArgs)
+
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
+
+            const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
+            const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
+
+
+            if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
+                if (response.higherNrr < belowTargetPositionTeam.nrr) {
+                    return `You can't Reach At position ${targetPosition}`
+                }
+                solveInequalityArgs.limitNrr = belowTargetPositionTeam.nrr
+                solveInequalityArgs.isLimitNrrKnown = true
+                const higherRunsOrOvers = solveInequality(solveInequalityArgs)
+                generateResponeArgs.higherRunsOrOvers = higherRunsOrOvers
+                const res = generateResponse(generateResponeArgs)
+                return res.msg
+            }
+            return response.msg
         }
+        else {
+            console.log(/case5/);
+            const lowerRunsOrOvers = 0
+            const solveInequalityArgs = { ...solveInequalityCommonArgs }
+            solveInequalityArgs.limitNrr = targetPositionTeam.nrr
+            solveInequalityArgs.comparedTeamForRuns = targetPositionTeamRuns
+            solveInequalityArgs.comparedTeamForOvers = targetPositionTeamOvers
+            solveInequalityArgs.comparedTeamAgainstRuns = targetPositionAgainstRuns
+            solveInequalityArgs.comparedTeamAgainstOvers = targetPositionAgainstOvers
+            solveInequalityArgs.isLimitNrrKnown = false
+            const higherRunsOrOvers = solveInequality(solveInequalityArgs)
 
-        //fetching data of team above target position team
-        g = parseInt(sortedData[position - 2].for.split('/')[0])
-        h = convertToDecimal(parseFloat(sortedData[position - 2].for.split('/')[1]))
-        i = parseInt(sortedData[position - 2].against.split('/')[0])
-        j = convertToDecimal(parseFloat(sortedData[position - 2].against.split('/')[1]))
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
 
-        //creating object to be passed to solve equtaion
-        inequalityObj2 = {
-            a: favouriteTeamRuns,
-            b,
-            c: favouriteTeamOvers,
-            d: favouriteTeamAgainstRuns,
-            e: favouriteTeamAgainstOvers,
-            f: sortedData[position - 2].nrr,
-            g: parseInt(sortedData[position - 2].for.split('/')[0]),
-            h: convertToDecimal(parseFloat(sortedData[position - 2].for.split('/')[1])),
-            i: parseInt(sortedData[position - 2].against.split('/')[0]),
-            j: convertToDecimal(parseFloat(sortedData[position - 2].against.split('/')[1])),
-            k,
-            tossResult,
-            oppositionTeam,
-            targetPositionTeam,
-            check: true
+            const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
+            const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
+
+
+            if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
+                if (response.higherNrr < belowTargetPositionTeam.nrr) {
+                    return `You can't Reach At position ${targetPosition}`
+                }
+                solveInequalityArgs.limitNrr = belowTargetPositionTeam.nrr
+                solveInequalityArgs.isLimitNrrKnown = true
+                const higherRunsOrOvers = solveInequality(solveInequalityArgs)
+                generateResponeArgs.higherRunsOrOvers = higherRunsOrOvers
+                const res = generateResponse(generateResponeArgs)
+                return res.msg
+            }
+            return response.msg
         }
     }
     else {
-        return { msg: "Invalid Input" }
+        if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === targetPositionTeam.pts) {
+            console.log(/case6/);
+            const solveInequalityArgs = { ...solveInequalityCommonArgs }
+            solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
+            solveInequalityArgs.comparedTeamForRuns = aboveTargetPositionTeamForRuns
+            solveInequalityArgs.comparedTeamForOvers = aboveTargetPositionTeamForOvers
+            solveInequalityArgs.comparedTeamAgainstRuns = aboveTargetPositionTeamAgainstRuns
+            solveInequalityArgs.comparedTeamAgainstOvers = aboveTargetPositionTeamAgainstOvers
+            solveInequalityArgs.isLimitNrrKnown = (oppositionTeam === aboveTargetPositionTeam.team) ? false : true
+
+            const lowerRunsOrOvers = solveInequality(solveInequalityArgs)
+
+            solveInequalityArgs.limitNrr = targetPositionTeam.nrr
+            solveInequalityArgs.isLimitNrrKnown = true
+
+            const higherRunsOrOvers = solveInequality(solveInequalityArgs)
+
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
+            return response.msg
+        }
+        else {
+            console.log(/case7/);
+            const lowerRunsOrOvers = 0
+            const solveInequalityArgs = { ...solveInequalityCommonArgs }
+            solveInequalityArgs.limitNrr = targetPositionTeam.nrr
+            solveInequalityArgs.isLimitNrrKnown = true
+            const higherRunsOrOvers = solveInequality(solveInequalityArgs)
+
+
+            const generateResponeArgs = {
+                ...generateResponeCommonArgs,
+                lowerRunsOrOvers,
+                higherRunsOrOvers
+            }
+            const response = generateResponse(generateResponeArgs)
+            return response.msg
+        }
     }
 
-    if (tossResult === 'bowling') {
 
-        //solving equation for nrr > targetteam nrr
-        let y = solveInequality(inequalityObj1)
-        // console.log(/y/,y);
-        if (y > k) { y = k }
-      
-        const higherOver = convertToExactOver(y, "lower")
 
-        //solving  equation for nrr < above team nrr
-        let x = solveInequality(inequalityObj2)
-        const lowerOver = convertToExactOver(x)
-        x = convertToDecimal(lowerOver)
-        y = convertToDecimal(higherOver)
 
-        //Calculate Range Of NRR
-        const higherNrr = calculateNrr(favouriteTeamRuns + b + 1, favouriteTeamOvers + x, favouriteTeamAgainstRuns + b, favouriteTeamAgainstOvers + k).toFixed(3)
-        const lowerNrr = calculateNrr(favouriteTeamRuns + b + 1, favouriteTeamOvers + y, favouriteTeamAgainstRuns + b, favouriteTeamAgainstOvers + k).toFixed(3)
-
-        const resp = `${favouriteTeam.team} need to chase ${b + 1} runs between ${lowerOver} and ${higherOver} overs.Revised NRR for ${favouriteTeam.team} will be between ${lowerNrr} to ${higherNrr}`
-        return resp
-    }
-    else {
-        //solving equation for nrr > targetteam nrr
-        let y = solveInequality(inequalityObj1)
-        y = Math.floor(y)
-        // console.log(/y/,y);
-        if (y >= b) { y = b - 1 }
-
-        //solving  quation for nrr < above team nrr
-        let x = Math.ceil(solveInequality(inequalityObj2))
-
-        //Calculate Range Of NRR
-        const higherNrr = calculateNrr(favouriteTeamRuns + b, favouriteTeamOvers + k, favouriteTeamAgainstRuns + x, favouriteTeamAgainstOvers + k).toFixed(3)
-        const lowerNrr = calculateNrr(favouriteTeamRuns + b, favouriteTeamOvers + k, favouriteTeamAgainstRuns + y, favouriteTeamAgainstOvers + k).toFixed(3)
-
-        const lowerRun = x
-        const higherRun = y
-        const resp = `If ${favouriteTeam.team} score ${b} runs in ${exactOver} over,${favouriteTeam.team} need to restrict ${oppositionTeam} between ${lowerRun} to ${higherRun} runs in ${exactOver} overs.Revised NRR for ${favouriteTeam.team} will be between ${lowerNrr} to ${higherNrr}.`
-        return resp
-    }
 
 }
