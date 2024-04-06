@@ -1,33 +1,36 @@
-
+// Function to calculate Net Run Rate (NRR)
 exports.calculateNrr = (forRuns, forOvers, againstRuns, againstOvers) => {
-    return ((forRuns / forOvers) - (againstRuns / againstOvers))
+    return ((forRuns / forOvers) - (againstRuns / againstOvers));
 }
 
+// Function to convert overs to decimal format
 exports.convertToDecimal = (over) => {
-    const decimalOvers = (((over - parseFloat(Math.floor(over)).toFixed(1)) * 10) + (parseInt(over) * 6)) / 6
-    return decimalOvers
+    // Calculate decimal overs from fractional and whole parts
+    const decimalOvers = (((over - parseFloat(Math.floor(over).toFixed(1))) * 10) + (parseInt(over) * 6)) / 6;
+    return decimalOvers;
 }
 
-exports.convertToExactOver = (over, typeOver = "higher") => {
+// Function to convert overs to exact over format
+exports.convertToExactOver = (over, typeNrr = "higher") => {
+    const x = ((over - parseFloat(Math.floor(over).toFixed(3)))) * 6;
 
-    const x = ((over - parseFloat(Math.floor(over)).toFixed(3))) * 6
-
-    if (typeOver === "higher") {
-         const y = Math.ceil(x)
-         if (y == 6) return Math.floor(over) + 1
-         const exactOver = parseFloat(`${Math.floor(over)}.${y}`)
-         return exactOver
+    // Determine whether to round up or down based on typeNrr
+    if (typeNrr === "higher") {
+         const y = Math.ceil(x);
+         if (y == 6) return Math.floor(over) + 1; // If y equals 6, increment the whole part
+         const exactOver = parseFloat(`${Math.floor(over)}.${y}`);
+         return exactOver;
     }
     else {
-         const y = Math.floor(x)
-         if (y == 6) return Math.floor(over) + 1
-         const exactOver = parseFloat(`${Math.floor(over)}.${y}`)
-         return exactOver
+         const y = Math.floor(x);
+         if (y == 6) return Math.floor(over) + 1; // If y equals 6, increment the whole part
+         const exactOver = parseFloat(`${Math.floor(over)}.${y}`);
+         return exactOver;
     }
-
 }
 
-exports. solveQuadratic=(a, b, c) =>{
+// Function to solve quadratic equation
+exports.solveQuadratic = (a, b, c) => {
     // Calculate the discriminant
     const discriminant = b * b - 4 * a * c;
 
@@ -49,5 +52,3 @@ exports. solveQuadratic=(a, b, c) =>{
         return [root1, root2];
     }
 }
-
-

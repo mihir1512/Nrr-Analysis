@@ -28,20 +28,21 @@ exports.generateResponse = (param) => {
     if (tossResult === 'bowling') {
         // Calculating higher and lower over parameters
         const higherOverParam = (higherRunsOrOvers > decimalOvers) ? decimalOvers : higherRunsOrOvers
-        if (!(higherOverParam >= 0)) return { msg: `You Can't Reach At Position ${targetPosition}` }
+        if (!(higherOverParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerOverParam = (lowerRunsOrOvers < 0) ? 0 : lowerRunsOrOvers
-        if (lowerOverParam >= decimalOvers) return { msg: `You Can't Reach At Position ${targetPosition}` }
+        if (lowerOverParam >= decimalOvers) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
 
         // Converting overs to exact format
-        const higherOver = convertToExactOver(higherOverParam, "lower")
+        const typeNrr="lower"
+        const higherOver = convertToExactOver(higherOverParam, typeNrr)
         const lowerOver = convertToExactOver(lowerOverParam)
         const decimalLowerOver = convertToDecimal(lowerOver)
         const decimalHigherOver = convertToDecimal(higherOver)
 
         // Calculate range of NRR
-        const higherNrr = calculateNrr(selectedTeamForRuns + firstInningRuns + 1, selectedTeamForOvers + decimalLowerOver, selectedTeamAgainstRuns + firstInningRuns, selectedTeamAgainstOvers + decimalOvers).toFixed(3)
-        const lowerNrr = calculateNrr(selectedTeamForRuns + firstInningRuns + 1, selectedTeamForOvers + decimalHigherOver, selectedTeamAgainstRuns + firstInningRuns, selectedTeamAgainstOvers + decimalOvers).toFixed(3)
-
+        const higherNrr =parseFloat( calculateNrr(selectedTeamForRuns + firstInningRuns + 1, selectedTeamForOvers + decimalLowerOver, selectedTeamAgainstRuns + firstInningRuns, selectedTeamAgainstOvers + decimalOvers).toFixed(3))
+        const lowerNrr =parseFloat( calculateNrr(selectedTeamForRuns + firstInningRuns + 1, selectedTeamForOvers + decimalHigherOver, selectedTeamAgainstRuns + firstInningRuns, selectedTeamAgainstOvers + decimalOvers).toFixed(3)
+        )
         // Construct response
         const resp = {
             msg: `${selectedTeam.team} need to chase ${firstInningRuns + 1} runs between ${lowerOver} and ${higherOver} overs. Revised NRR for ${selectedTeam.team} will be between ${lowerNrr} to ${higherNrr}`,
@@ -55,17 +56,17 @@ exports.generateResponse = (param) => {
         // Calculating higher and lower run parameters
         const higherFloorRuns = Math.floor(higherRunsOrOvers)
         const higherRunParam = (higherFloorRuns >= firstInningRuns) ? firstInningRuns - 1 : higherFloorRuns
-        if (!(higherRunParam >= 0)) return { msg: `You Can't Reach At Position ${targetPosition}` }
+        if (!(higherRunParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerRunParam = (lowerRunsOrOvers < 0) ? 0 : lowerRunsOrOvers
-        if (lowerRunParam >= firstInningRuns) return { msg: `You Can't Reach At Position ${targetPosition}` }
+        if (lowerRunParam >= firstInningRuns) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerCeilRuns = Math.ceil(lowerRunParam)
 
         const lowerRun = lowerCeilRuns
         const higherRun = higherRunParam
 
         // Calculate range of NRR
-        const higherNrr = calculateNrr(selectedTeamForRuns + firstInningRuns, selectedTeamForOvers + decimalOvers, selectedTeamAgainstRuns + lowerRun, selectedTeamAgainstOvers + decimalOvers).toFixed(3)
-        const lowerNrr = calculateNrr(selectedTeamForRuns + firstInningRuns, selectedTeamForOvers + decimalOvers, selectedTeamAgainstRuns + higherRun, selectedTeamAgainstOvers + decimalOvers).toFixed(3)
+        const higherNrr = parseFloat(calculateNrr(selectedTeamForRuns + firstInningRuns, selectedTeamForOvers + decimalOvers, selectedTeamAgainstRuns + lowerRun, selectedTeamAgainstOvers + decimalOvers).toFixed(3))
+        const lowerNrr = parseFloat(calculateNrr(selectedTeamForRuns + firstInningRuns, selectedTeamForOvers + decimalOvers, selectedTeamAgainstRuns + higherRun, selectedTeamAgainstOvers + decimalOvers).toFixed(3))
 
         // Construct response
         const resp = {

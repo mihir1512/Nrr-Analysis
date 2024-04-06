@@ -55,7 +55,7 @@ exports.getResult = (req, res) => {
         // Validate if selected team can reach the target position after winning
         if(selectedTeamPointsAfterWinning<targetPositionTeam.pts)
         {
-            return res.status(200).json({msg:`You Can't Reach At Position ${targetPosition}`})
+            return res.status(200).json({msg:`${selectedTeam.team} Can't Reach At Position ${targetPosition}`})
         }
 
         // Convert overs to decimal number

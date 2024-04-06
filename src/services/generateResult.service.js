@@ -68,7 +68,7 @@ exports.generateResult = (param) => {
     if (targetPositionTeam.pts === selectedTeam.pts) {
         if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts) {
             // Case 1: If target position team and selected team have the same points and the team above them also has the same points
-            const response = `You can't reach at position ${position}`
+            const response = `${selectedTeam.team} can't reach at position ${position}`
             return response
         }
         else if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts + 2) {
@@ -127,12 +127,14 @@ exports.generateResult = (param) => {
             }
             const response = generateResponse(generateResponeArgs)
 
+            //if below target position team exist and selected team lowerNrr after match  is less than below target team nrr then we have to make sure that it is greater then below target position team nrr so that we can reach at target position
+            //So we have to calculate lowerNrr again keeping limitNrr as below target position team nrr
             const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
             const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
 
             if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
                 if (response.higherNrr < belowTargetPositionTeam.nrr) {
-                    return `Selected Team can't Reach At position ${targetPosition}`
+                    return `${selectedTeam.team} can't Reach At position ${targetPosition}`
                 }
                 solveInequalityArgs.limitNrr = belowTargetPositionTeam.nrr
                 solveInequalityArgs.isLimitNrrKnown = true
@@ -162,12 +164,14 @@ exports.generateResult = (param) => {
             }
             const response = generateResponse(generateResponeArgs)
 
+            //if below target position team exist and selected team lowerNrr after match  is less than below target team nrr then we have to make sure that it is greater then below target position team nrr so that we can reach at target position
+            //So we have to calculate lowerNrr again keeping limitNrr as below target position team nrr
             const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
             const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
 
             if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
                 if (response.higherNrr < belowTargetPositionTeam.nrr) {
-                    return `You can't Reach At position ${targetPosition}`
+                    return `${selectedTeam.team} can't Reach At position ${targetPosition}`
                 }
                 solveInequalityArgs.limitNrr = belowTargetPositionTeam.nrr
                 solveInequalityArgs.isLimitNrrKnown = true
