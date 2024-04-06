@@ -2,7 +2,7 @@ const { convertToDecimal } = require('../utils/result.utils')
 const { solveInequality } = require('../helpers/solveInequality.helper')
 const { generateResponse } = require("../helpers/generateResponse.helper")
 
-
+// Exporting the function generateResult
 exports.generateResult = (param) => {
     let {
         sortedPointTable,
@@ -16,18 +16,19 @@ exports.generateResult = (param) => {
         tossResult
     } = param
 
-
-    //geeting target position team Data
+    // Getting data for target position team
     const targetPositionTeamRuns = parseInt(targetPositionTeam.for.split('/')[0])
     const targetPositionTeamOvers = convertToDecimal(parseFloat(targetPositionTeam.for.split('/')[1]))
     const targetPositionAgainstRuns = parseInt(targetPositionTeam.against.split('/')[0])
     const targetPositionAgainstOvers = convertToDecimal(parseFloat(targetPositionTeam.against.split('/')[1]))
-    //getting selected team data
+
+    // Getting data for selected team
     const selectedTeamForRuns = parseInt(selectedTeam.for.split('/')[0])
     const selectedTeamForOvers = convertToDecimal(parseFloat(selectedTeam.for.split('/')[1]))
     const selectedTeamAgainstRuns = parseInt(selectedTeam.against.split('/')[0])
     const selectedTeamAgainstOvers = convertToDecimal(parseFloat(selectedTeam.against.split('/')[1]))
-    //geeting above target position team data
+
+    // Getting data for the team above the target position team
     const isAboveTargetPositionTeamExist = (targetPosition - 2 >= 0) ? true : false
     const aboveTargetPositionTeam = isAboveTargetPositionTeamExist ? sortedPointTable[targetPosition - 2] : null
     const aboveTargetPositionTeamForRuns = isAboveTargetPositionTeamExist ? parseInt(aboveTargetPositionTeam.for.split('/')[0]) : null
@@ -35,6 +36,7 @@ exports.generateResult = (param) => {
     const aboveTargetPositionTeamAgainstRuns = isAboveTargetPositionTeamExist ? parseInt(aboveTargetPositionTeam.against.split('/')[0]) : null
     const aboveTargetPositionTeamAgainstOvers = isAboveTargetPositionTeamExist ? convertToDecimal(parseFloat(aboveTargetPositionTeam.against.split('/')[1])) : null
 
+    // Common arguments for solveInequality function
     const solveInequalityCommonArgs = {
         selectedTeamForRuns,
         selectedTeamForOvers,
@@ -47,6 +49,7 @@ exports.generateResult = (param) => {
         targetPositionTeam,
     }
 
+    // Common arguments for generateResponse function
     const generateResponeCommonArgs = {
         firstInningRuns,
         decimalOvers,
@@ -61,14 +64,15 @@ exports.generateResult = (param) => {
         targetPosition
     }
 
+    // Logic for handling different cases
     if (targetPositionTeam.pts === selectedTeam.pts) {
         if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts) {
-            console.log(/case1/);
+            // Case 1: If target position team and selected team have the same points and the team above them also has the same points
             const response = `You can't reach at position ${position}`
             return response
         }
         else if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === selectedTeam.pts + 2) {
-            console.log(/case2/);
+            // Case 2: If target position team and selected team have the same points but the team above them has 2 points more
             const higherRunsOrOvers = (tossResult === "bowling") ? decimalOvers : firstInningRuns - 1
             const solveInequalityArgs = { ...solveInequalityCommonArgs }
             solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
@@ -88,10 +92,9 @@ exports.generateResult = (param) => {
             return response.msg
         }
         else {
-            console.log(/case3/);
+            // Case 3: If target position team and selected team have the same points and no team above them has the same points
             const higherRunsOrOvers = (tossResult === "bowling") ? decimalOvers : firstInningRuns - 1
             const lowerRunsOrOvers = 0
-
             const generateResponeArgs = {
                 ...generateResponeCommonArgs,
                 lowerRunsOrOvers,
@@ -103,7 +106,7 @@ exports.generateResult = (param) => {
     }
     else if (targetPositionTeam.team === oppositionTeam) {
         if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === targetPositionTeam.pts) {
-            console.log(/case4/);
+            // Case 4: If target position team is the opposition team and the team above them has the same points
             const solveInequalityArgs = { ...solveInequalityCommonArgs }
             solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
             solveInequalityArgs.isLimitNrrKnown = true
@@ -127,10 +130,9 @@ exports.generateResult = (param) => {
             const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
             const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
 
-
             if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
                 if (response.higherNrr < belowTargetPositionTeam.nrr) {
-                    return `You can't Reach At position ${targetPosition}`
+                    return `Selected Team can't Reach At position ${targetPosition}`
                 }
                 solveInequalityArgs.limitNrr = belowTargetPositionTeam.nrr
                 solveInequalityArgs.isLimitNrrKnown = true
@@ -142,7 +144,7 @@ exports.generateResult = (param) => {
             return response.msg
         }
         else {
-            console.log(/case5/);
+            // Case 5: If target position team is the opposition team and no team above them has the same points
             const lowerRunsOrOvers = 0
             const solveInequalityArgs = { ...solveInequalityCommonArgs }
             solveInequalityArgs.limitNrr = targetPositionTeam.nrr
@@ -163,7 +165,6 @@ exports.generateResult = (param) => {
             const isbelowTargetPositionTeamExist = (targetPosition < sortedPointTable.length) ? true : false
             const belowTargetPositionTeam = isbelowTargetPositionTeamExist ? sortedPointTable[targetPosition] : null
 
-
             if (isbelowTargetPositionTeamExist && belowTargetPositionTeam.team != selectedTeam.team && targetPositionTeam.pts === belowTargetPositionTeam.pts && belowTargetPositionTeam.nrr >= response.lowerNrr) {
                 if (response.higherNrr < belowTargetPositionTeam.nrr) {
                     return `You can't Reach At position ${targetPosition}`
@@ -180,7 +181,7 @@ exports.generateResult = (param) => {
     }
     else {
         if (isAboveTargetPositionTeamExist && aboveTargetPositionTeam.pts === targetPositionTeam.pts) {
-            console.log(/case6/);
+            // Case 6: If target position team is not the opposition team and the team above them has the same points
             const solveInequalityArgs = { ...solveInequalityCommonArgs }
             solveInequalityArgs.limitNrr = aboveTargetPositionTeam.nrr
             solveInequalityArgs.comparedTeamForRuns = aboveTargetPositionTeamForRuns
@@ -205,13 +206,12 @@ exports.generateResult = (param) => {
             return response.msg
         }
         else {
-            console.log(/case7/);
+            // Case 7: If target position team is not the opposition team and no team above them has the same points
             const lowerRunsOrOvers = 0
             const solveInequalityArgs = { ...solveInequalityCommonArgs }
             solveInequalityArgs.limitNrr = targetPositionTeam.nrr
             solveInequalityArgs.isLimitNrrKnown = true
             const higherRunsOrOvers = solveInequality(solveInequalityArgs)
-
 
             const generateResponeArgs = {
                 ...generateResponeCommonArgs,
@@ -222,9 +222,4 @@ exports.generateResult = (param) => {
             return response.msg
         }
     }
-
-
-
-
-
 }
