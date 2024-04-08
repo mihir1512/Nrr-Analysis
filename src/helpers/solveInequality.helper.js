@@ -23,7 +23,18 @@ exports.solveInequality = (param) => {
     if (tossResult === 'bowling') {
         //If imitNrr is dynamically determined based on the current match conditions
         if (isLimitNrrKnown === false) {
+            //If imitNrr is dynamically determined based on the current match conditions
+            //we have equation 
+            //((selectedTeamForRuns+firstInningRuns+1)/(selectedTeamForOvers+lowerOrHigherOvers)-
+            //(selectedTeamAgainstRuns+firstInningRuns)/(selectedTeamAgainstOvers+20)) should less then or grrater then
+            //((comparedTeamForRuns+firstInningRuns)/(comparedTeamForOvers+20) - 
+            // (comparedTeamAgainstRuns+firstInningRuns)/(comparedTeamAgainstOver+lowerOrHigherOvers)) will give quadratic equation
+            // as keeping lowerOrHigherOvers as x
             // Calculating coefficients for quadratic equation
+            //If we have quadratic equation like ax^2 + bx + c
+            //xSquareCoefficient=a
+            //xCoefficient=b
+            //constant =c
             const xSquareCoefficient = (
                 ((selectedTeamAgainstOvers + decimalOvers) * (comparedTeamForRuns + firstInningRuns)) +
                 ((comparedTeamForOvers + decimalOvers) * (selectedTeamAgainstRuns + firstInningRuns))
@@ -49,6 +60,10 @@ exports.solveInequality = (param) => {
         }
         else {
             // Calculating lower or higher overs based on the limit NRR
+            // we have equation 
+            //((selectedTeamForRuns+firstInningRuns+1)/(selectedTeamForOvers+lowerOrHigherOvers)-
+            //(selectedTeamAgainstRuns+firstInningRuns)/(selectedTeamAgainstOvers+20)) should less then or grrater then
+            //limitNrr , here we are making lowerOrHigherOvers as subject
             const lowerOrHigherOvers = (
                 (((selectedTeamForRuns + firstInningRuns + 1) * (selectedTeamAgainstOvers + decimalOvers)) -
                     (selectedTeamAgainstRuns * selectedTeamForOvers) - (firstInningRuns * selectedTeamForOvers) -
@@ -62,6 +77,13 @@ exports.solveInequality = (param) => {
     if (tossResult === "batting") {
         // If imitNrr is dynamically determined based on the current match conditions
         if (isLimitNrrKnown === false) {
+            //we have equation 
+            //((selectedTeamForRuns+firstInningRuns+)/(selectedTeamForOvers+20)-
+            //(selectedTeamAgainstRuns+lowerOrHigherRuns)/(selectedTeamAgainstOvers+20)) should less then or grrater then
+            //((comparedTeamForRuns+firstInningRuns)/(comparedTeamForOvers+20) - 
+            // (comparedTeamAgainstRuns+firstInningRuns)/(comparedTeamAgainstOver+lowerOrHigherOvers)) will give quadratic equation
+            // as keeping lowerOrHigherRuns as x
+
             // Calculating lower or higher runs based on the parameters
             const lowerOrHigherRuns = (
                 ((comparedTeamForOvers + decimalOvers) * (comparedTeamAgainstOvers + decimalOvers) * (selectedTeamForRuns + firstInningRuns) * (selectedTeamAgainstOvers + decimalOvers)) +
@@ -72,6 +94,11 @@ exports.solveInequality = (param) => {
                     (comparedTeamForOvers + decimalOvers) * (comparedTeamAgainstOvers + decimalOvers) * (selectedTeamForOvers + decimalOvers))
             return lowerOrHigherRuns
         } else {
+            // we have equation 
+            //((selectedTeamForRuns+firstInningRuns)/(selectedTeamForOvers+20)-
+            //(selectedTeamAgainstRuns+lowerOrHigherRuns)/(selectedTeamAgainstOvers+20)) should less then or grrater then
+            //limitNrr , here we are making lowerOrHigherOvers as subject
+
             // Calculating lower or higher runs based on the limit NRR
             const lowerOrHigherRuns = (
                 (((selectedTeamForRuns + firstInningRuns) * (selectedTeamAgainstOvers + decimalOvers)) -

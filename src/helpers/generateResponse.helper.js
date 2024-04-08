@@ -28,14 +28,16 @@ exports.generateResponse = (param) => {
     if (tossResult === 'bowling') {
         // Calculating higher and lower over parameters
         const higherOverParam = (higherRunsOrOvers > decimalOvers) ? decimalOvers : higherRunsOrOvers
-        if (!(higherOverParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
+        if (isNaN(higherOverParam) || !(higherOverParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerOverParam = (lowerRunsOrOvers < 0) ? 0 : lowerRunsOrOvers
-        if (lowerOverParam >= decimalOvers) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
+        if (isNaN(lowerOverParam) || lowerOverParam >= decimalOvers) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
 
         // Converting overs to exact format
         const typeNrr="lower"
+        //convert higherOvers  and lowerOvers to exaxtOver format based on type of Nrr we are calculating (lowerNrrr or highernrr)
         const higherOver = convertToExactOver(higherOverParam, typeNrr)
         const lowerOver = convertToExactOver(lowerOverParam)
+        //converting exactover to decimalOver format so that we can calculate nrr according to decimal over format
         const decimalLowerOver = convertToDecimal(lowerOver)
         const decimalHigherOver = convertToDecimal(higherOver)
 
@@ -56,11 +58,12 @@ exports.generateResponse = (param) => {
         // Calculating higher and lower run parameters
         const higherFloorRuns = Math.floor(higherRunsOrOvers)
         const higherRunParam = (higherFloorRuns >= firstInningRuns) ? firstInningRuns - 1 : higherFloorRuns
-        if (!(higherRunParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
+        if (isNaN(higherRunParam) || !(higherRunParam >= 0)) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerRunParam = (lowerRunsOrOvers < 0) ? 0 : lowerRunsOrOvers
-        if (lowerRunParam >= firstInningRuns) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
+        if (isNaN(lowerRunParam) || lowerRunParam >= firstInningRuns) return { msg: `${selectedTeam.team} Can't Reach At Position ${targetPosition}` }
         const lowerCeilRuns = Math.ceil(lowerRunParam)
 
+        //ceiled and floored value of runs based on higher run or lower run
         const lowerRun = lowerCeilRuns
         const higherRun = higherRunParam
 
